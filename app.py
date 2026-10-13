@@ -208,19 +208,30 @@ with tab2:
             try:
                 prediction = model.predict(input_df)[0]
                 st.success(f"Predicted calorie category: **{prediction}**")
-                if hasattr(model, "predict_proba"):
-                    try:
-                        probs = model.predict_proba(input_df)[0]
-                        classifier = model.named_steps.get("classifier", model)
-                        classes = classifier.classes_
-                        prob_df = pd.DataFrame({
-                            "Category": classes.astype(str),
-                            "Probability": probs
-                        }).sort_values("Probability", ascending=False)
-                        st.dataframe(prob_df, use_container_width=True, hide_index=True)
-                        st.bar_chart(prob_df.set_index("Category"))
-                    except Exception:
-                        pass
+               
+if hasattr(model, "predict_proba"):
+    try:
+        probs = model.predict_proba(input_df)[0]
+        classifier = model.named_steps.get("classifier", model)
+        classes = classifier.classes_
+
+        prob_df = pd.DataFrame({
+            "Category": classes.astype(str),
+            "Probability": probs
+        }).sort_values("Probability", ascending=False)
+
+        st.dataframe(
+            prob_df,
+            use_container_width=True,
+            hide_index=True
+        )
+        st.bar_chart(prob_df.set_index("Category"))
+
+    except Exception as e:
+        st.warning(f"Could not display prediction probabilities: {e}")
 
 st.divider()
-st.caption("Nutrition results depend on the CSV dataset you provide. ML predictions are educational estimates.")
+st.caption(
+    "Nutrition results depend on the CSV dataset you provide. "
+    "ML predictions are educational estimates."
+)
